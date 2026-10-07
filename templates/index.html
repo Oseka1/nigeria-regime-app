@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nigeria Regime Sector Shifts Predictor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto; padding: 20px; background-color: #f4f7f6; }
+        h2 { color: #006633; text-align: center; }
+        .form-group { margin-bottom: 20px; background: white; padding: 15px; border-radius: 6px; border-left: 5px solid #006633; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
+        input, select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; }
+        button { background-color: #006633; color: white; padding: 14px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 1.1em; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        button:hover { background-color: #004d26; }
+        #result { margin-top: 25px; padding: 15px; font-size: 1.3em; font-weight: bold; text-align: center; border-radius: 4px; border: 1px solid #006633; background-color: #e6f2ec; color: #006633; }
+    </style>
+</head>
+<body>
+
+    <h2>Nigeria Regime Sector Shifts</h2>
+    <p style="text-align: center; color: #666;">Predict the Official FX Rate (USD/NGN) by entering the parameters below:</p>
+
+    <form id="predictionForm">
+        <!-- 1. Year -->
+        <div class="form-group">
+            <label for="year">Year:</label>
+            <input type="number" id="year" placeholder="Enter Yeare.g., 2026" required>
+        </div>
+
+        <!-- 2. Political Era (Dropdown to handle categorical text data) -->
+        <div class="form-group">
+            <label for="political_era">Political Era:</label>
+            <select id="political_era" required>
+                <option value="" disabled selected>-- Select Era --</option>
+                <option value="0">Fourth Republic (1999-Present)</option>
+                <option value="1">Military Regimes</option>
+                <option value="2">Other Era</option>
+            </select>
+        </div>
+
+        <!-- 3. Agricultural Contribution Pct -->
+        <div class="form-group">
+            <label for="agric">Agricultural Contribution (%)</label>
+            <input type="number" id="agric" step="any" placeholder="e.g., 22.5" required>
+        </div>
+
+        <!-- 4. Industry Contribution Pct -->
+        <div class="form-group">
+            <label for="industry">Industry Contribution (%)</label>
+            <input type="number" id="industry" step="any" placeholder="e.g., 18.2" required>
+        </div>
+
+        <!-- 5. Services Contribution Pct -->
+        <div class="form-group">
+            <label for="services">Services Contribution (%)</label>
+            <input type="number" id="services" step="any" placeholder="e.g., 54.3" required>
+        </div>
+
+        <!-- 6. Average Crude Oil Price USD -->
+        <div class="form-group">
+            <label for="oil_price">Average Crude Oil Price (USD)</label>
+            <input type="number" id="oil_price" step="any" placeholder="e.g., 75.50" required>
+        </div>
+
+        <button type="submit">Calculate FX Rate</button>
+    </form>
+
+    <!-- Kept visible by default so it never renders as a completely blank page layout-->
+    <div id="result">Waiting for input parameters...</div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerText = "Processing prediction...";
+
+        const featureArray = [
+            document.getElementById('year').value,
+            document.getElementById('political_era').value,
+            document.getElementById('agric').value,
+            document.getElementById('industry').value,
+            document.getElementById('services').value,
+            document.getElementById('oil_price').value
+        ];
+
+        try {
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: featureArray })
+            });
+
+            const data = await response.json();
+
+            if(data.prediction) {
+                resultDiv.style.backgroundColor = "#e6f2ec";
+                resultDiv.style.color = "#006633";
+                resultDiv.innerText = `Predicted Official FX Rate: ₦${data.prediction}`;
+            } else {
+                resultDiv.style.backgroundColor = "#ffe6e6";
+                resultDiv.style.color = "#cc0000";
+                resultDiv.innerText = `Error: ${data.error}`;
+            }
+        } catch (err) {
+            resultDiv.style.backgroundColor = "#ffe6e6";
+            resultDiv.style.color = "#cc0000";
+            resultDiv.innerText = "Failed to connect to the backend server.";
+        }
+    });
+    </script>
+</body>
+</html>
