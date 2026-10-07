@@ -32,7 +32,7 @@ def predict():
         # IMPORTANT: Ensure these match your original training column names perfectly
         input_data = pd.DataFrame([{
             'Year': year,
-            'Political _Era': political_era_code,
+            'Political_Era': political_era_code,
             'Agricultural_Contribution_Pct': agric,
             'Industry_Contribution_Pct': industry,
             'Services_Contribution_Pct': services,
