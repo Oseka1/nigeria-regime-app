@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request, jsonify
 import joblib
 import numpy as np
+import pandas as pd
 
 app = Flask(__name__)
 
-# Load your saved model from the NBE python script step
+# Load the model, robust scaler, and label encoder
 model = joblib.load('regime_shift_model.pkl')
+scaler = joblib.load('scaler.pkl')
+label_encoder = joblib.load('label_encoder.pkl')
 
 @app.route('/')
 def home():
@@ -17,17 +20,34 @@ def predict():
         data = request.json
         raw_features = data['features']
 
-        # Converts all inputs (Year, Political_Era encoding, Pct metrics, Oil Price) into floats
-        features = [float(x) for x in raw_features]
+        # 1. Extract inputs cleanly
+        year = float(raw_features[0])
+        political_era_code = float(raw_features[1]) # Dropdown sends encoded numeric integer directly
+        agric = float(raw_features[2])
+        industry = float(raw_features[3])
+        services = float(raw_features[4])
+        oil_price = float(raw_features[5])
 
-        # Structure into a 2D array matrix: [[Year, Era, Agric, Industry, Services, Oil]]
-        final_features = [np.array(features)]
+        # 2. Structure columns into a DataFrame matching your exact original X layout order
+        # IMPORTANT: Ensure these match your original training column names perfectly
+        input_data = pd.DataFrame([{
+            'Year': year,
+            'Political _Era': political_era_code,
+            'Agricultural_Contribution_Pct': agric,
+            'Industry_Contribution_Pct': industry,
+            'Services_Contribution_Pct': services,
+            'Average_Crude_Oil_Price_USD': oil_price
+        }])
 
-        # Predict the numerical Official_FX_Rate_USD_NGN output
-        prediction = model.predict(final_features)
+        # 3. Apply RobustScaler transformation to features (excluding the encoded categorical if relevant)
+        # Note: If your original script scaled the entire X matrix together, keep it like this:
+        scaled_features = scaler.transform(input_data)
+        
+        # 4. Predict the numerical Official_FX_Rate_USD_NGN output
+        prediction = model.predict(scaled_features)
 
-        # Clean array formatting and bound to 2 decimal places for Naira presentation
-        fx_rate_pred = float(prediction[0])
+        # Format the continuous value to 2 decimal places for presentation
+        fx_rate_pred = float(prediction)
         formatted_prediction = f"{fx_rate_pred:,.2f}"
 
         return jsonify({'prediction': formatted_prediction})
