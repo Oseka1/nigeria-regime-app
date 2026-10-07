@@ -47,7 +47,7 @@ def predict():
         prediction = model.predict(scaled_features)
 
         # Format the continuous value to 2 decimal places for presentation
-        fx_rate_pred = float(prediction)
+        fx_rate_pred = float(prediction[0])
         formatted_prediction = f"{fx_rate_pred:,.2f}"
 
         return jsonify({'prediction': formatted_prediction})
