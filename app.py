@@ -33,7 +33,7 @@ def predict():
         input_data = pd.DataFrame([{
             'Year': year,
             'Political_Era': political_era_code,
-            'Agricultural_Contribution_Pct': agric,
+            'Agriculture_Contribution_Pct': agric,
             'Industry_Contribution_Pct': industry,
             'Services_Contribution_Pct': services,
             'Average_Crude_Oil_Price_USD': oil_price
